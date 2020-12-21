@@ -1,0 +1,20 @@
+{
+  "name": "restruct/silverstripe-mediastream",
+  "description": "Add a timeline of combined cross-platform updates to your website",
+  "type": "silverstripe-module",
+  "license": "BSD-3-Clause",
+  "keywords": [
+    "silverstripe",
+    "social",
+    "twitter",
+    "facebook"
+  ],
+  "authors": [
+    {
+      "name": "restruct"
+    }
+  ],
+  "extra": {
+    "installer-name": "mediastream"
+  }
+}

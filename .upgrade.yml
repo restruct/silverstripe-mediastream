@@ -1,0 +1,9 @@
+mappings:
+  MediaInput_SyncJob: Restruct\Silverstripe\MediaStream\MediaInput_SyncJob
+  MediaInputInterface: Restruct\Silverstripe\MediaStream\MediaInputInterface
+  MediaUpdate: Restruct\Silverstripe\MediaStream\MediaUpdate
+  MediaInputInstagram: Restruct\Silverstripe\MediaStream\MediaInputInstagram
+  MediaStreamAdmin: Restruct\Silverstripe\MediaStream\MediaStreamAdmin
+  MediaInput: Restruct\Silverstripe\MediaStream\MediaInput
+  MediaInputTwitter: Restruct\Silverstripe\MediaStream\MediaInputTwitter
+  MediaInputFacebook: Restruct\Silverstripe\MediaStream\MediaInputFacebook
