@@ -21,7 +21,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Restruct\\Silverstripe\\MediaStream\\": "src/"
+      "Restruct\\Silverstripe\\MediaStream\\": "src/",
+      "Restruct\\Silverstripe\\MediaStream\\Tasks\\": "src/Feed/Tasks"
     },
     "classmap": [
       "src"
