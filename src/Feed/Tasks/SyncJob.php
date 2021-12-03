@@ -2,6 +2,7 @@
 
 namespace Restruct\Silverstripe\MediaStream\Tasks;
 
+use Restruct\Silverstripe\MediaStream\MediaStream;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\Debug;
 
@@ -39,6 +40,9 @@ class SyncJob extends BuildTask
             echo( "SYNCING: {$item->Name} <br>" );
             echo( $item->fetchUpdates() ?: 'OK' );
         }
+
+
+        return true;
 
     }
 }
