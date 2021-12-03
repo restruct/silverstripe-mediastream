@@ -1,0 +1,3 @@
+PageController:
+  extensions:
+    - Restruct\Silverstripe\MediaStream\PageControllerExtension
