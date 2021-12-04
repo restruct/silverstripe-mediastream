@@ -55,6 +55,9 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         }
 
         /**
+         * @param int $limit
+         *
+         * @return bool|void
          * @throws SDKException
          */
         public function fetchUpdates($limit=80)
@@ -91,8 +94,8 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
                     $this->facebookMedia->LastSynced = strtotime($dateTime);
                     $this->facebookMedia->write();
                 }
-
-                return $oUpdates;
+                return true;
+                //return $oUpdates;
 
             } catch ( ResponseException $e ) {
                 echo 'Graph returned an error: ' . $e->getMessage();

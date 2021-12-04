@@ -50,10 +50,9 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         /**
          * @param int $limit
          *
-         * @return ArrayList|void
+         * @return bool|void
          * @throws \JsonException
          * @throws \SilverStripe\ORM\ValidationException
-         * @throws Exception
          */
         public function fetchUpdates($limit = 80)
         {
@@ -88,7 +87,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
                     $this->instagramMedia->write();
                 }
 
-                return $oUpdates;
+                return true;// $oUpdates;
 
             }
 
