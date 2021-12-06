@@ -49,17 +49,6 @@ class MediaStream extends DataObject
      */
     private static $default_cache_lifetime = 900; // 15 minutes (900 seconds)
 
-    /**
-     * @return FieldList
-     */
-    public function getCMSFields()
-    {
-
-        $fields = parent::getCMSFields();
-
-        return $fields;
-    }
-
     public function getThumbnailImage($post)
     {
         return $post[ 'media_url' ];
@@ -76,38 +65,6 @@ class MediaStream extends DataObject
 
         return ( $media_type === 'VIDEO' ) ? $post[ 'thumbnail_url' ] : $this->getImage($post);
     }
-
-
-    /**
-     * @param $url
-     * @param $width
-     * @param $height
-     */
-    public function ImageResizer($url, $width, $height)
-    {
-
-        header('Content-type: image/jpeg');
-
-        [ $width_orig, $height_orig ] = getimagesize($url);
-
-        $ratio_orig = $width_orig / $height_orig;
-
-        if ( $width / $height > $ratio_orig ) {
-            $width = $height * $ratio_orig;
-        } else {
-            $height = $width / $ratio_orig;
-        }
-
-        // This resamples the image
-        $image_p = imagecreatetruecolor($width, $height);
-        $image = imagecreatefromjpeg($url);
-        imagecopyresampled($image_p, $image, 0, 0, 0, 0, $width, $height, $width_orig, $height_orig);
-
-        // Output the image
-        imagejpeg($image_p, null, 100);
-        imagedestroy($image_p);
-    }
-
 
     public function fetchUpdates($limit=80)
     {
