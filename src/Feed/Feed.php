@@ -8,6 +8,7 @@ namespace Restruct\Silverstripe\MediaStream {
     use SilverStripe\Core\Config\Configurable;
     use SilverStripe\Core\Injector\Injectable;
     use Exception;
+    use SilverStripe\Dev\Debug;
 
     abstract class Feed
     {
@@ -23,7 +24,7 @@ namespace Restruct\Silverstripe\MediaStream {
          * @param $post
          *
          * @return array
-         * @throws \Exception
+         * @throws Exception
          */
         protected function getPostData($post): array
         {
@@ -38,6 +39,7 @@ namespace Restruct\Silverstripe\MediaStream {
                 'TimeStamp' => self::getCreatedTimestamp($post),
                 'OriginURL' => $this->getPostUrl($post),
                 'MediaType' => $media_type,
+                'RawInput' => json_encode($post),
                 'UserName'  => $this->getUserName($post),
             ];
         }
@@ -71,7 +73,8 @@ namespace Restruct\Silverstripe\MediaStream {
             $oMediaUpdate->update($aData);
             $oMediaUpdate->write();
 
-            if ( !empty($aData[ 'ImageURL' ]) ) {
+            if ( !empty($aData[ 'ImageURL' ])) {
+
                 $imageURL = $aData[ 'ImageURL' ];
                 $aImageData = [ 'MediaUpdateID' => $oMediaUpdate->ID, ];
 
@@ -144,8 +147,8 @@ namespace Restruct\Silverstripe\MediaStream {
         protected function parseText($rawText)
         {
             $rawText = nl2br($rawText);
-
-            return preg_replace('/https?:\/\/[\w\-\.!~#?&=+\*\'"(),\/]+/', '<a href="$0">$0</a>', $rawText);
+            $text = html_entity_decode($rawText, 0, 'UTF-8');
+            return preg_replace('/https?:\/\/[\w\-\.!~#?&=+\*\'"(),\/]+/', '<a href="$0">$0</a>', $text);
         }
 
         /**
