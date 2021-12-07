@@ -40,7 +40,7 @@ namespace Restruct\Silverstripe\MediaStream {
                 'OriginURL' => $this->getPostUrl($post),
                 'HasMedia' => isset($post['media_url']),
                 'MediaType' => $media_type,
-                'RawInput'  => json_encode($post),
+                'RawInput' => json_encode($post),
                 'UserName'  => $this->getUserName($post),
             ];
         }
@@ -82,7 +82,10 @@ namespace Restruct\Silverstripe\MediaStream {
 
             return;
 
-            if ( !empty($aData[ 'ImageURL' ]) ) {
+            if ( !empty($aData[ 'ImageURL' ])) {
+
+                $imageURL = $aData[ 'ImageURL' ];
+                $aImageData = [ 'MediaUpdateID' => $oMediaUpdate->ID, ];
 
                 $imageURL = $aData[ 'ImageURL' ];
 
@@ -167,7 +170,7 @@ namespace Restruct\Silverstripe\MediaStream {
         {
             $rawText = nl2br($rawText);
             $text = html_entity_decode($rawText, 0, 'UTF-8');
-
+            
             return preg_replace('/https?:\/\/[\w\-\.!~#?&=+\*\'"(),\/]+/', '<a href="$0">$0</a>', $text);
         }
 

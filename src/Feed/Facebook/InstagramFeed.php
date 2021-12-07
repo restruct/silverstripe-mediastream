@@ -56,6 +56,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          * @return bool|void
          * @throws \JsonException
          * @throws \SilverStripe\ORM\ValidationException
+         * @throws Exception
          */
         public function fetchUpdates($limit = 80)
         {
@@ -65,10 +66,11 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             $aResultData = static::getCurlResults($url);
             if ( !empty($aResultData[ 'data' ]) ) {
                 $aResult = $aResultData[ 'data' ];
-                $oUpdates = ArrayList::create();
 
                 foreach ( $aResult as $post ) {
+
                     $aData = $this->getPostData($post);
+
                     $media_type = $aData[ 'MediaType' ];
                     $image = ( $media_type === 'Video' ) ? $this->getThumbnailImage($post) : $this->getImage($post);
                     $aData[ 'ImageURL' ] = $image;
@@ -78,8 +80,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
                         $media_url = $post[ 'media_url' ];
                         $aData[ 'Content' ] = static::parseVideo($media_url) . $this->getPostContent($post);
                     }
-
-                    $oUpdates->push($this->getOrCreateMediaUpdate($this->instagramMedia, $aData));
+                    $this->getOrCreateMediaUpdate($this->instagramMedia, $aData);
 
                 }
 
@@ -161,6 +162,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         public function getPostContent($post)
         {
             $text = $post[ 'caption' ] ?? '';
+            $text = html_entity_decode($text, 0, 'UTF-8');
 
             return $this->parseText($text);
         }
