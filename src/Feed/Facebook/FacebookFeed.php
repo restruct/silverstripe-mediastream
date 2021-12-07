@@ -73,7 +73,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             ]);
 
             try {
-                $oUpdates = ArrayList::create();
+
                 $url = sprintf('/%s/%s?%s', $this->facebookMedia->PageID, $facebookMedia->getRequestType(), $this->getQueryParameters());
 
                 $response = $fb->get($url, $this->facebookMedia->AccessToken);
@@ -85,7 +85,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
                     $aData[ 'MediaStreamID' ] = $this->facebookMedia->ID;
                     $aData[ 'ImageURL' ] = $this->getImage($post);
 
-                    $oUpdates->push($this->getOrCreateMediaUpdate($this->facebookMedia, $aData));
+                    $this->getOrCreateMediaUpdate($this->facebookMedia, $aData);
 
                 }
                 if (! $facebookMedia->LiveStream ) {
@@ -94,8 +94,9 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
                     $this->facebookMedia->LastSynced = strtotime($dateTime);
                     $this->facebookMedia->write();
                 }
+
                 return true;
-                //return $oUpdates;
+
 
             } catch ( ResponseException $e ) {
                 echo 'Graph returned an error: ' . $e->getMessage();
