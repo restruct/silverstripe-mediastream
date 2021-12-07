@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * https://developers.facebook.com/docs/instagram-basic-display-api/getting-started#get-started
+ */
 namespace Restruct\Silverstripe\MediaStream\Facebook {
 
     use Facebook\Exception\ResponseException;
@@ -27,6 +29,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             'username',
             'media_type',
             'media_url',
+            'children',
             'permalink',
             'thumbnail_url',
             'timestamp',
@@ -211,14 +214,19 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         }
 
         /**
+         * Get the primary image for the post
+         *
          * @param $post
          *
          * @return mixed
          */
         public function getImage($post)
         {
-            // TODO: Implement getImage() method.
+
+            return $post[ 'media_url' ] ?? null;
         }
+
+
 
         /**
          * @param $post

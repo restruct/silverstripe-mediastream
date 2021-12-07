@@ -2,11 +2,15 @@
 
 namespace Restruct\Silverstripe\MediaStream;
 
+use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\DataObject;
 
-
+/**
+ * @method DataList Images()
+ */
 class MediaUpdate extends DataObject
 {
 
@@ -29,9 +33,11 @@ class MediaUpdate extends DataObject
     private static $has_one = [
         'MediaStream' => MediaStream::class,
     ];
-    private static $has_many = [
-        'Images' => MediaResource::class,
+
+    private static $many_many = [
+        'Images' => Image::class,
     ];
+
     private static $casting = [
         'DisplayDateTime' => 'DBDatetime',
     ];

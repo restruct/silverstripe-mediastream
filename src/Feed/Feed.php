@@ -38,6 +38,7 @@ namespace Restruct\Silverstripe\MediaStream {
                 'Content'   => $this->getPostContent($post),
                 'TimeStamp' => self::getCreatedTimestamp($post),
                 'OriginURL' => $this->getPostUrl($post),
+                'HasMedia' => isset($post['media_url']),
                 'MediaType' => $media_type,
                 'RawInput' => json_encode($post),
                 'UserName'  => $this->getUserName($post),
@@ -72,53 +73,51 @@ namespace Restruct\Silverstripe\MediaStream {
 
             $oMediaUpdate->update($aData);
             $oMediaUpdate->write();
+            $aCurrentImagesIds = $oMediaUpdate->Images()->column();
+
+            $aImagesIds = [];
+
+
+            Debug::show($aData);
+
+            return;
 
             if ( !empty($aData[ 'ImageURL' ])) {
 
                 $imageURL = $aData[ 'ImageURL' ];
                 $aImageData = [ 'MediaUpdateID' => $oMediaUpdate->ID, ];
 
-                $oMediaResource = MediaResource::find($aImageData);
-                if ( !$oMediaResource ) {
-                    $oMediaResource = MediaResource::create($aImageData);
-                }
-                $oImage = $oMediaResource->Image();
+                $imageURL = $aData[ 'ImageURL' ];
 
-                $uuid = $oImage->exists() ? $oImage->Title : self::Guid();
-                $oMediaResource->Title = $uuid;
-                $oMediaResource->URL = $imageURL;
-                $oMediaResource->write();
+                $basename = self::getImageFilename($imageURL);
 
                 $dirPath = Controller::join_links('MediaStream', $this->getType());
-                $stripedImageURL = preg_replace('/\?.*/', '', $imageURL);
-                $path_parts = pathinfo($stripedImageURL);
-                $extension = $path_parts[ 'extension' ] !== 'php' ? $path_parts[ 'extension' ] : 'jpg';
-
-                $basename = $uuid . '.' . $extension;
                 $filename = Controller::join_links($dirPath, $basename);
                 $file_path = sprintf('%s/%s', ASSETS_PATH, $filename);
 
                 try {
 
-                    if ( copy($imageURL, $file_path) ) {
+                    if (1==2&& copy($imageURL, $file_path) ) {
 
-                        $oImage = $oMediaResource->Image();
+                        $oImage = $oMediaUpdate->Images()->find('Name', $basename);
 
                         if ( !$oImage ) {
                             $oImage = Image::create();
                         }
 
-                        $oImage->Title = $uuid;
+                        $oImage->Title = $basename;
                         $oImage->setFilename($filename);
                         $oImage->write();
                         $oImage->publishRecursive();
 
-                        $oMediaResource->ImageID = $oImage->ID;
-                        $oMediaResource->write();
+                        //Debug::show($oImage);
 
                         $oImage->setFromLocalFile($file_path, $basename, null, null, [
                             'conflict' => AssetStore::CONFLICT_OVERWRITE,
                         ]);
+
+                        $oMediaUpdate->Images()->add($oImage);
+                        $aImagesIds[]=$oImage->ID;
                     }
 
                 } catch ( Exception $exception ) {
@@ -127,10 +126,33 @@ namespace Restruct\Silverstripe\MediaStream {
                     //Debug::show($exception->getTrace());
                 }
 
+            }
 
+            $aExcluded = array_filter(array_diff($aCurrentImagesIds, $aImagesIds));
+            if ( count($aExcluded) ) {
+                $oMediaUpdate->getManyManyComponents('Images')->removeMany($aExcluded);
             }
 
             return $oMediaUpdate;
+        }
+
+
+        private static function getImageFilename($url)
+        {
+
+            $stripedImageURL = preg_replace('/\?.*/', '', $url);
+            $path_parts = pathinfo($stripedImageURL);
+
+            if ( $path_parts[ 'extension' ] !== 'php' ) {
+
+                return $path_parts[ 'basename' ];
+
+            }
+
+            $parts = parse_url($url);
+            parse_str($parts[ 'query' ], $query);
+
+            return $query[ 'd' ] . '.jpg';
         }
 
         /**
@@ -148,6 +170,7 @@ namespace Restruct\Silverstripe\MediaStream {
         {
             $rawText = nl2br($rawText);
             $text = html_entity_decode($rawText, 0, 'UTF-8');
+            
             return preg_replace('/https?:\/\/[\w\-\.!~#?&=+\*\'"(),\/]+/', '<a href="$0">$0</a>', $text);
         }
 
