@@ -31,7 +31,7 @@ namespace Restruct\Silverstripe\MediaStream {
      * @property mixed      $UserID
      * @property mixed|null $AccessToken
      */
-    class InstagramMedia extends MediaStream implements ProviderInterface
+    class MediaInputInstagram extends MediaInput implements ProviderInterface
     {
 
         public const POSTS_AND_COMMENTS = 0;
@@ -51,7 +51,7 @@ namespace Restruct\Silverstripe\MediaStream {
 
         private static $plural_name = 'Instagram Media';
 
-        private $type = 'Instagram';
+        protected $type = 'Instagram';
 
         private static $summary_fields = [];
 

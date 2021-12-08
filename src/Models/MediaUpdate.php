@@ -5,6 +5,7 @@ namespace Restruct\Silverstripe\MediaStream;
 use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
 use SilverStripe\ORM\DataList;
+use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
 use SilverStripe\ORM\DataObject;
 
@@ -31,7 +32,7 @@ class MediaUpdate extends DataObject
     private static $default_sort = 'TimeStamp DESC';
 
     private static $has_one = [
-        'MediaStream' => MediaStream::class,
+        'MediaStream' => MediaInput::class,
     ];
 
     private static $many_many = [
@@ -55,19 +56,21 @@ class MediaUpdate extends DataObject
     public function LocalTimeStamp()
     {
         // for Translate date
-        return DBField::create_field('LocalDatetime', $this->TimeStamp);
+        return DBField::create_field(DBDatetime::class, $this->TimeStamp);
+        //return DBField::create_field('LocalDatetime', $this->TimeStamp);
     }
 
     public function PreviewPicture()
     {
-        if ( $this->ImageURL ) {
-            return DBField::create_field('HTMLText', "<img src=\"{$this->ImageURL}\" style=\"max-height:60px;height:auto;width:auto;\" />");
+        if ( count($this->Images()) ) {
+            $url = $this->Images()->first()->URL;
+            return DBField::create_field('HTMLText', "<img src=\"{$url}\" style=\"max-height:60px;height:auto;width:auto;\" />");
         }
     }
 
     public function getDisplayDateTime()
     {
-
+        return DBField::create_field(DBDatetime::class, $this->TimeStamp);
     }
 
 }

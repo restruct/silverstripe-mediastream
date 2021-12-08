@@ -4,16 +4,16 @@ namespace Restruct\Silverstripe\MediaStream {
 
     use SilverStripe\Admin\ModelAdmin;
 
-    class MediaStreamAdmin extends ModelAdmin
+    class MediaInputAdmin extends ModelAdmin
     {
 
         /**
          * @var string[]
          */
         private static $managed_models = [
-            MediaUpdate::class,
-            FacebookMedia::class,
-            InstagramMedia::class,
+            MediaInput::class,
+            MediaInputFacebook::class,
+            MediaInputInstagram::class,
         ];
 
         /**

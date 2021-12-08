@@ -4,6 +4,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
     use GuzzleHttp\Client;
     use Restruct\Silverstripe\MediaStream\FacebookMedia;
+    use Restruct\Silverstripe\MediaStream\MediaInputFacebook;
     use Restruct\Silverstripe\MediaStream\MediaStream;
     use SilverStripe\Core\Injector\Injectable;
     use SilverStripe\Dev\Debug;
@@ -15,21 +16,17 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         private $baseApiURL = 'https://graph.facebook.com';
 
         /**
-         * @var FacebookMedia
+         * @var MediaInputFacebook
          */
-        protected $media;
+        protected $mediaInput;
 
-        public function __construct($media = null)
+        public function __construct($mediaInput = null)
         {
-            parent::__construct($media);
+            parent::__construct($mediaInput);
 
             $this->setClient(new Client([
                 'base_uri' => $this->getBaseApiURL(),
             ]));
-
-            if ( null !== $media ) {
-                $this->media = $media;
-            }
         }
 
         /**
@@ -45,11 +42,11 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          */
         public function getAccessToken()
         {
-            if ( $this->media->AccessToken ) {
+            if ( $this->mediaInput->AccessToken ) {
                 return $this->getLongLivedToken();
             }
 
-            return $this->media->AccessToken;
+            return $this->mediaInput->AccessToken;
 
         }
 
@@ -62,10 +59,10 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             try {
 
                 $url = sprintf("%s/oauth/access_token?%s", $this->getBaseApiURL(), http_build_query([
-                    'client_id'         => $this->media->AppID,
-                    'client_secret'     => $this->getMedia()->AppSecret,
+                    'client_id'         => $this->mediaInput->AppID,
+                    'client_secret'     => $this->mediaInput->AppSecret,
                     'grant_type'        => 'fb_exchange_token',
-                    'fb_exchange_token' => $this->getMedia()->AccessToken,
+                    'fb_exchange_token' => $this->mediaInput->AccessToken,
                 ]));
 
                 $aResult = $this->getCurlResults($url);
@@ -88,7 +85,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          */
         private function getPageAccessToken($access_token)
         {
-            $app_secret_proof = hash_hmac('sha256', $access_token, $this->media->AppSecret);
+            $app_secret_proof = hash_hmac('sha256', $access_token, $this->mediaInput->AppSecret);
 
             $aData = [
                 'fields'          => 'access_token',
@@ -98,13 +95,13 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
             try {
 
-                $url = sprintf("%s/%s?%s", $this->getBaseApiURL(), $this->media->PageID, http_build_query($aData));
+                $url = sprintf("%s/%s?%s", $this->getBaseApiURL(), $this->mediaInput->PageID, http_build_query($aData));
 
                 $aResult = $this->getCurlResults($url);
-                $this->media->AccessToken = $aResult[ 'access_token' ];
-                $this->media->write();
+                $this->mediaInput->AccessToken = $aResult[ 'access_token' ];
+                $this->mediaInput->write();
 
-                return $this->media->AccessToken;
+                return $this->mediaInput->AccessToken;
 
             } catch ( Exception $e ) {
                 //Debug::show($e->getMessage());
@@ -112,13 +109,6 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
         }
 
-        /**
-         * @return FacebookMedia
-         */
-        public function getMedia(): FacebookMedia
-        {
-            return $this->media;
-        }
 
     }
 }

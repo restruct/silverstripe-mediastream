@@ -2,7 +2,7 @@
 
 namespace Restruct\Silverstripe\MediaStream\Tasks;
 
-use Restruct\Silverstripe\MediaStream\MediaStream;
+use Restruct\Silverstripe\MediaStream\MediaInput;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\Dev\Debug;
 
@@ -26,15 +26,15 @@ class SyncJob extends BuildTask
      */
     public function getTitle()
     {
-        return 'Sync (Social) MediaStream';
+        return 'Sync (Social) Mediastream';
     }
 
     public function run($request)
     {
 
-        $oMediaStream = MediaStream::get()->filter('Enabled', true);
+        $oMediaStream = MediaInput::get()->filter('Enabled', true);
 
-        /** @var MediaStream $item */
+        /** @var MediaInput $item */
         foreach ( $oMediaStream as $item ) {
 
             echo( "SYNCING: {$item->Name} <br>" );

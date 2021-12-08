@@ -4,6 +4,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
     use GuzzleHttp\Client;
     use Restruct\Silverstripe\MediaStream\Feed;
+    use Restruct\Silverstripe\MediaStream\MediaInput;
     use Restruct\Silverstripe\MediaStream\MediaStream;
     use SilverStripe\Core\Injector\Injectable;
     use SilverStripe\Dev\Debug;
@@ -18,13 +19,16 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          */
         protected $client;
 
-        protected $media;
+        /**
+         * @var MediaInput
+         */
+        protected $mediaInput;
 
-        public function __construct($media = null)
+        public function __construct($mediaInput = null)
         {
 
-            if ( null !== $media ) {
-                $this->media = $media;
+            if ( null !== $mediaInput ) {
+                $this->mediaInput = $mediaInput;
             }
         }
 
@@ -44,14 +48,10 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             $this->client = $client;
         }
 
-        abstract public function getMedia();
-
-
         protected static function sanitiseClassName($class)
         {
             return str_replace('\\', '-', $class);
         }
-
 
         /**
          * @param string $requestUrl
@@ -59,12 +59,11 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          * @param array  $aPostFields
          *
          * @return mixed
-         * @throws \JsonException
          */
         protected function getCurlResults(string $requestUrl, int $timeout = 10, array $aPostFields = [])
         {
 
-            return Feed::getCurlResults($requestUrl, $timeout, $aPostFields);
+            return MediaInput::getCurlResults($requestUrl, $timeout, $aPostFields);
         }
 
     }
