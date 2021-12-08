@@ -20,19 +20,15 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          */
         protected $mediaInput;
 
-        public function __construct($mediaInput = null)
-        {
-            parent::__construct($mediaInput);
-
-            $this->setClient(new Client([
-                'base_uri' => $this->getBaseApiURL(),
-            ]));
-        }
-
         /**
          * @return string
          */
         public function getBaseApiURL(): string
+        {
+            return $this->baseApiURL;
+        }
+
+        public function getBaseURL(): string
         {
             return $this->baseApiURL;
         }

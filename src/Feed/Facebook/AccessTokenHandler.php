@@ -26,6 +26,9 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
         public function __construct($mediaInput = null)
         {
+            $this->setClient(new Client([
+                'base_uri' => $this->getBaseURL(),
+            ]));
 
             if ( null !== $mediaInput ) {
                 $this->mediaInput = $mediaInput;

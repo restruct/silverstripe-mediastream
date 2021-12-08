@@ -2,14 +2,14 @@
 
 namespace Restruct\Silverstripe\MediaStream;
 
+use SilverStripe\Assets\Folder;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Assets\Image;
 use SilverStripe\Assets\Storage\AssetStore;
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Injector\Injectable;
 use Exception;
 /**
  * @property mixed|null $Limit
@@ -143,7 +143,8 @@ class MediaInput extends DataObject
 
             $basename = self::getImageFilename($imageURL);
 
-            $dirPath = Controller::join_links('MediaStream', $this->getType());
+            $dirPath = Controller::join_links('MediaInputs', $this->getType());
+            $oFolder = Folder::find_or_make($dirPath);
             $filename = Controller::join_links($dirPath, $basename);
             $file_path = sprintf('%s/%s', ASSETS_PATH, $filename);
 
@@ -157,16 +158,15 @@ class MediaInput extends DataObject
                         $oImage = Image::create();
                     }
 
-                    $oImage->Title = $basename;
-                    $oImage->setFilename($filename);
-                    $oImage->write();
-                    $oImage->publishRecursive();
-
-                    //Debug::show($oImage);
-
                     $oImage->setFromLocalFile($file_path, $basename, null, null, [
                         'conflict' => AssetStore::CONFLICT_OVERWRITE,
                     ]);
+
+                    $oImage->Title = $basename;
+                    $oImage->ParentID = $oFolder->ID;
+                    $oImage->setFilename($filename);
+                    $oImage->write();
+                    $oImage->publishRecursive();
 
                     $oMediaUpdate->Images()->add($oImage);
                     $aImagesIds[]=$oImage->ID;
@@ -174,7 +174,7 @@ class MediaInput extends DataObject
 
             } catch ( Exception $exception ) {
 
-                //Debug::show($exception->getMessage());
+                Debug::show($exception->getMessage());
                 //Debug::show($exception->getTrace());
             }
 
@@ -216,12 +216,13 @@ class MediaInput extends DataObject
 
     public function fetchUpdates()
     {
-        $dirPath = Controller::join_links('MediaStream', $this->getType());
+        $dirPath = Controller::join_links('MediaInputs', $this->getType());
         $absFilePath = sprintf('%s/%s', ASSETS_PATH, $dirPath);
 
         if ( !file_exists($absFilePath) && !mkdir($absFilePath, 0777, true) && !is_dir($absFilePath) ) {
             throw new \RuntimeException(sprintf('Directory "%s" was not created', $absFilePath));
         }
+
     }
 
     /**

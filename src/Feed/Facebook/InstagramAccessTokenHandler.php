@@ -9,6 +9,8 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
     use GuzzleHttp\Client;
     use Restruct\Silverstripe\MediaStream\InstagramMedia;
+    use Restruct\Silverstripe\MediaStream\MediaInputAdmin;
+    use Restruct\Silverstripe\MediaStream\MediaInputInstagram;
     use Restruct\Silverstripe\MediaStream\MediaStream;
     use Restruct\Silverstripe\MediaStream\MediaStreamAdmin;
     use SilverStripe\Control\Controller;
@@ -31,19 +33,9 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         private $baseGraphURL = 'https://graph.instagram.com';
 
         /**
-         * @var InstagramMedia
+         * @var MediaInputInstagram
          */
-        protected $media;
-
-        public function __construct($media)
-        {
-            parent::__construct($media);
-
-            $this->setClient(new Client([
-                'base_uri' => $this->getBaseGraphURL(),
-            ]));
-
-        }
+        protected $mediaInput;
 
         /**
          * @return string|void
@@ -51,14 +43,14 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         public function getAccessToken()
         {
 
-            $expires = $this->media->dbObject('TokenExpiryDate');
+            $expires = $this->mediaInput->dbObject('TokenExpiryDate');
 
-            $diff = (int)$expires->TimeDiffIn('days');
+            $diff = $expires ? (int)$expires->TimeDiffIn('days') : 0;
             if ( $diff < 6 ) {
                 return $this->refreshLongLivedToken();
             }
 
-            return $this->media->AccessToken;
+            return $this->mediaInput->AccessToken;
 
         }
 
@@ -71,7 +63,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         {
             $aOptions = [
                 'grant_type'    => 'ig_exchange_token',
-                'client_secret' => $this->media->AppSecret,
+                'client_secret' => $this->mediaInput->AppSecret,
                 'access_token'  => $accessToken,
             ];
 
@@ -86,7 +78,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
             $aOptions = [
                 'grant_type'   => 'ig_refresh_token',
-                'access_token' => $this->media->AccessToken,
+                'access_token' => $this->mediaInput->AccessToken,
             ];
 
             return $this->processToken('refresh_access_token', $aOptions);
@@ -111,14 +103,14 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
                 $date = new DateTime('+' . $aResult[ 'expires_in' ] . ' seconds');
                 $date = $date->format('Y-m-d H:i:s');
 
-                $this->media->AccessToken = $aResult[ 'access_token' ];
-                $this->media->TokenExpiryDate = $date;
-                $this->media->write();
+                $this->mediaInput->AccessToken = $aResult[ 'access_token' ];
+                $this->mediaInput->TokenExpiryDate = $date;
+                $this->mediaInput->write();
 
-                return $this->media->AccessToken;
+                return $this->mediaInput->AccessToken;
 
             } catch ( Exception $e ) {
-                Debug::show($e->getMessage());
+                //Debug::show($e->getMessage());
             }
 
         }
@@ -131,9 +123,9 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         public function getRedirectUri(): string
         {
 
-            $class_name = static::sanitiseClassName($this->media->ClassName);
+            $class_name = static::sanitiseClassName($this->mediaInput->ClassName);
 
-            return Controller::join_links(static::getAbsoluteLink(), $class_name, 'EditForm/field', $class_name, 'item', $this->media->ID, 'edit');
+            return Controller::join_links(static::getAbsoluteLink(), $class_name, 'EditForm/field', $class_name, 'item', $this->mediaInput->ID, 'edit');
 
         }
 
@@ -144,7 +136,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
         {
 
             return $this->getBaseApiURL() . '/authorize?' . http_build_query([
-                    'app_id'        => $this->media->AppID,
+                    'app_id'        => $this->mediaInput->AppID,
                     'redirect_uri'  => $this->getRedirectUri(),
                     'scope'         => 'user_profile,user_media',
                     'response_type' => 'code',
@@ -162,8 +154,8 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             try {
 
                 return $this->getCurlResults(sprintf("%s/access_token", $this->getBaseApiURL()), 10, [
-                    'app_id'       => $this->media->AppID,
-                    'app_secret'   => $this->media->AppSecret,
+                    'app_id'       => $this->mediaInput->AppID,
+                    'app_secret'   => $this->mediaInput->AppSecret,
                     'grant_type'   => 'authorization_code',
                     'redirect_uri' => $this->getRedirectUri(),
                     'code'         => $accessCode,
@@ -172,7 +164,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
 
 
             } catch ( \Exception $e ) {
-                Debug::show($e->getMessage());
+                //Debug::show($e->getMessage());
             }
 
 
@@ -187,7 +179,7 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          */
         protected static function getAbsoluteLink(): string
         {
-            return Controller::join_links(Director::absoluteBaseURL(), MediaStreamAdmin::create()->Link(), '/');
+            return Controller::join_links(Director::absoluteBaseURL(), MediaInputAdmin::create()->Link(), '/');
         }
 
         /**
@@ -207,12 +199,11 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
             return $this->baseGraphURL;
         }
 
-        /**
-         * @return InstagramMedia
-         */
-        public function getMedia(): InstagramMedia
-        {
-            return $this->media;
+
+        public function getBaseURL(){
+            return $this->baseGraphURL;
         }
+
+
     }
 }

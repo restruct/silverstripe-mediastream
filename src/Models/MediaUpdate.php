@@ -4,6 +4,7 @@ namespace Restruct\Silverstripe\MediaStream;
 
 use SilverStripe\Assets\Image;
 use SilverStripe\CMS\Model\SiteTree;
+use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
@@ -62,10 +63,26 @@ class MediaUpdate extends DataObject
 
     public function PreviewPicture()
     {
-        if ( count($this->Images()) ) {
-            $url = $this->Images()->first()->URL;
+        if ( $this->Image() ) {
+            $url = $this->Image()->URL;
+
             return DBField::create_field('HTMLText', "<img src=\"{$url}\" style=\"max-height:60px;height:auto;width:auto;\" />");
         }
+    }
+
+    /**
+     * @param null $sort
+     *
+     * @return DataObject/null
+     */
+    public function Image($sort = null)
+    {
+
+        if ( count($this->Images()) ) {
+            return $this->Images()->sort($sort)->first();
+        }
+
+        return null;
     }
 
     public function getDisplayDateTime()

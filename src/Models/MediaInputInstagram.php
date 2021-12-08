@@ -10,20 +10,18 @@ namespace Restruct\Silverstripe\MediaStream {
 
 
     use GuzzleHttp\Exception\GuzzleException;
-    use Restruct\Silverstripe\MediaStream\Facebook\AccessTokenHandler;
     use Restruct\Silverstripe\MediaStream\Facebook\InstagramAccessTokenHandler;
-    use Restruct\Silverstripe\MediaStream\Facebook\InstagramFeed;
     use Restruct\Silverstripe\MediaStream\Providers\ProviderInterface;
     use SilverStripe\Control\Controller;
-    use SilverStripe\Control\Director;
     use SilverStripe\Core\Convert;
     use SilverStripe\Dev\Debug;
-    use SilverStripe\Forms\DropdownField;
     use SilverStripe\Forms\LiteralField;
     use SilverStripe\Forms\ReadonlyField;
     use SilverStripe\Forms\RequiredFields;
-    use SilverStripe\ORM\FieldType\DBField;
+    use SilverStripe\ORM\ArrayList;
     use SilverStripe\ORM\ValidationException;
+    use DateTime;
+
 
     /**
      * @property mixed|null $AppID
@@ -34,11 +32,26 @@ namespace Restruct\Silverstripe\MediaStream {
     class MediaInputInstagram extends MediaInput implements ProviderInterface
     {
 
+        private $endPoint = 'https://graph.instagram.com';
+
+        private $version = 'v12.0';
+
+        private static $fetch_fields = [
+            'id',
+            'username',
+            'media_type',
+            'media_url',
+            'permalink',
+            'thumbnail_url',
+            'timestamp',
+            'caption',
+        ];
+
         public const POSTS_AND_COMMENTS = 0;
 
         public const POSTS_ONLY = 1;
 
-        private static $table_name = 'InstagramMedia';
+        private static $table_name = 'MediaInputInstagram';
 
         private static $db = [
             'AppID'       => 'Varchar(400)',
@@ -115,22 +128,114 @@ namespace Restruct\Silverstripe\MediaStream {
          *
          * @return bool|void
          * @throws ValidationException
-         * @throws \JsonException
          */
-        public function fetchUpdates($limit=100)
+        public function fetchUpdates($limit = 80)
         {
-            return InstagramFeed::create($this)->fetchUpdates($limit);
+            parent::fetchUpdates();
+            $url = sprintf('%s/%s/%s?%s', $this->getEndPoint(), $this->UserID, 'media', $this->getQueryParameters());
+
+            $aResultData = static::getCurlResults($url);
+            if ( !empty($aResultData[ 'data' ]) ) {
+                $aResult = $aResultData[ 'data' ];
+                $oUpdates = ArrayList::create();
+
+                foreach ( $aResult as $post ) {
+                    $aData = $this->getPostData($post);
+                    $media_type = $aData[ 'MediaType' ];
+                    $image = ( $media_type === 'Video' ) ? $this->getThumbnailImage($post) : $this->getImage($post);
+                    $aData[ 'ImageURL' ] = $image;
+                    $aData[ 'MediaStreamID' ] = $this->ID;
+
+                    if ( $aData[ 'MediaType' ] === "Video" ) {
+                        $media_url = $post[ 'media_url' ];
+                        $aData[ 'Content' ] = static::parseVideo($media_url) . $this->getPostContent($post);
+                    }
+
+                    $oUpdates->push($this->getOrCreateMediaUpdate($this, $aData));
+
+                }
+
+                $date = new DateTime();
+                $dateTime = $date->format('Y-m-d H:i:s');
+                $this->LastSynced = strtotime($dateTime);
+                $this->write();
+
+                return true;
+
+            }
+
+        }
+
+
+        /**
+         * @return string
+         */
+        private function getQueryParameters()
+        {
+
+            $aQueryParameters = [
+                'date_format'  => 'U',
+                'fields'       => implode(',', static::getFetchFields()),
+                'access_token' => $this->getToken(),
+            ];
+            $aQueryParameters[ 'limit' ] = 100;
+
+            if ( $this->LastSynced ) {
+                //$aQueryParameters[ 'since' ] = $this->LastSynced;
+            }
+
+            return http_build_query($aQueryParameters);
+        }
+
+
+        public function getImage($post)
+        {
+
+            return $post[ 'media_url' ] ?? null;
+        }
+
+        /**
+         * @param $post
+         *
+         * @return null
+         */
+        public function getPostUrl($post)
+        {
+            return $post[ 'permalink' ] ?? null;
+        }
+
+        /**
+         * @param $post
+         *
+         * @return array|string|string[]|null
+         */
+        public function getPostContent($post)
+        {
+            $text = $post[ 'caption' ] ?? '';
+
+            return $this->parseText($text);
         }
 
 
         /**
          * @param $post
          *
-         * @return mixed
+         * @return null
          */
-        public function getPostContent($post)
+        public function getThumbnailImage($post)
         {
-            // TODO: Implement getPostContent() method.
+            return $post[ 'thumbnail_url' ] ?? null;
+        }
+
+
+        /**
+         * @param $post
+         *
+         * @return null
+         */
+        public function getUserName($post)
+        {
+            return $post[ 'username' ] ?? null;
         }
 
         /**
@@ -140,37 +245,23 @@ namespace Restruct\Silverstripe\MediaStream {
          */
         public function getPostCreated($post)
         {
-            // TODO: Implement getPostCreated() method.
+            return $post[ 'timestamp' ] ?? null;
         }
 
         /**
-         * @param $post
-         *
-         * @return mixed
+         * @return string
          */
-        public function getPostUrl($post)
+        public function getEndPoint(): string
         {
-            // TODO: Implement getPostUrl() method.
+            return $this->endPoint;
         }
 
         /**
-         * @param $post
-         *
-         * @return mixed
+         * @return string[]
          */
-        public function getUserName($post)
+        public static function getFetchFields(): array
         {
-            // TODO: Implement getUserName() method.
-        }
-
-        /**
-         * @param $post
-         *
-         * @return mixed
-         */
-        public function getImage($post)
-        {
-            // TODO: Implement getImage() method.
+            return self::$fetch_fields;
         }
 
 
