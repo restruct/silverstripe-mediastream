@@ -11,7 +11,6 @@ namespace Restruct\Silverstripe\MediaStream {
 
     use GuzzleHttp\Exception\GuzzleException;
     use Restruct\Silverstripe\MediaStream\Facebook\InstagramAccessTokenHandler;
-    use Restruct\Silverstripe\MediaStream\Providers\ProviderInterface;
     use SilverStripe\Control\Controller;
     use SilverStripe\Core\Convert;
     use SilverStripe\Dev\Debug;
@@ -29,7 +28,7 @@ namespace Restruct\Silverstripe\MediaStream {
      * @property mixed      $UserID
      * @property mixed|null $AccessToken
      */
-    class MediaInputInstagram extends MediaInput implements ProviderInterface
+    class MediaInputInstagram extends MediaInput
     {
 
         private $endPoint = 'https://graph.instagram.com';

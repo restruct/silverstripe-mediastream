@@ -14,7 +14,6 @@ namespace Restruct\Silverstripe\MediaStream {
 
     use Restruct\Silverstripe\MediaStream\Facebook\FacebookAccessTokenHandler;
     use Restruct\Silverstripe\MediaStream\Facebook\FacebookFeed;
-    use Restruct\Silverstripe\MediaStream\Providers\ProviderInterface;
     use SilverStripe\ORM\FieldType\DBField;
 
     /**
@@ -24,7 +23,7 @@ namespace Restruct\Silverstripe\MediaStream {
      * @property int        $Type
      * @property int        $PageID
      */
-    class MediaInputTwitter extends MediaInput implements ProviderInterface
+    class MediaInputTwitter extends MediaInput
     {
 
         public const POSTS_AND_COMMENTS = 0;

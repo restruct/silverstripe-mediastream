@@ -18,7 +18,6 @@ use Facebook\Facebook;
 use DateTime;
 use Exception;
 use Restruct\Silverstripe\MediaStream\Facebook\FacebookAccessTokenHandler;
-use Restruct\Silverstripe\MediaStream\Providers\ProviderInterface;
 use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
@@ -34,7 +33,7 @@ use SilverStripe\ORM\FieldType\DBField;
  * @property int        $Type
  * @property int        $PageID
  */
-class MediaInputFacebook extends MediaInput implements ProviderInterface
+class MediaInputFacebook extends MediaInput
 {
 
     private $endPoint = 'https://graph.facebook.com';
