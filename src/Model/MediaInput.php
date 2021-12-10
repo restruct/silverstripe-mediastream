@@ -19,7 +19,7 @@ use Exception;
  */
 class MediaInput extends DataObject
 {
-    protected $type;
+    protected $input_type;
 
     private static $table_name = "MediaInput";
 
@@ -201,7 +201,7 @@ class MediaInput extends DataObject
      */
     public function getType()
     {
-        return $this->type;
+        return $this->input_type;
     }
 
     public function fetchUpdates()

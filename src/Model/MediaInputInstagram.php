@@ -69,7 +69,7 @@ namespace Restruct\Silverstripe\MediaStream\Model {
 
         private static $plural_name = 'Instagram Media';
 
-        protected $type = 'Instagram';
+        protected $input_type = 'Instagram';
 
         private static $summary_fields = [];
 

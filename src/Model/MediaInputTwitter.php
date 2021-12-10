@@ -36,7 +36,7 @@ class MediaInputTwitter extends MediaInput
 
     private static $summary_fields = [];
 
-    protected $type = 'twitter';
+    protected $input_type = 'twitter';
 
     public function getCMSFields()
     {

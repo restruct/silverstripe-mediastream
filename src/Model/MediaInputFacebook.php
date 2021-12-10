@@ -27,7 +27,7 @@ use SilverStripe\Forms\LiteralField;
  * @property mixed|null $AppSecret
  * @property mixed|null $AppID
  * @property mixed|null $AccessToken
- * @property int        $Type
+ * @property int        $DisplayType
  * @property int        $PageID
  */
 class MediaInputFacebook extends MediaInput
@@ -69,7 +69,7 @@ class MediaInputFacebook extends MediaInput
         'AppID'       => 'Varchar(400)',
         'AppSecret'   => 'Varchar(400)',
         'AccessToken' => 'Varchar(400)',
-        'Type'        => 'Int',
+        'DisplayType' => 'Int',
     ];
 
     private static $singular_name = 'Facebook Input';
@@ -87,7 +87,7 @@ class MediaInputFacebook extends MediaInput
         self::POSTS_ONLY         => 'Page Posts Only',
     ];
 
-    protected $type = 'Facebook';
+    protected $input_type = 'Facebook';
 
     public function getCMSFields()
     {
@@ -101,25 +101,15 @@ class MediaInputFacebook extends MediaInput
             'Label'
         );
 
-        $fields->replaceField('Type',
-            DropdownField::create('Type', 'Facebook Type', $this->config()->facebook_types));
+        $fields->addFieldToTab('Root.Main', DropdownField::create('DisplayType', 'Display Type')->setSource(static::$facebook_types), 'Enabled');
 
         return $fields;
-    }
-
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-
-        return $this->type;
     }
 
     public function getRequestType()
     {
 
-        if ( $this->Type === self::POSTS_AND_COMMENTS ) {
+        if ( $this->DisplayType === self::POSTS_AND_COMMENTS ) {
             return 'feed';
         }
 
@@ -145,7 +135,7 @@ class MediaInputFacebook extends MediaInput
 
         try {
             $url = sprintf('/%s/%s?%s', $this->PageID, $this->getRequestType(), $this->getQueryParameters());
-            Debug::show($url);
+
             $response = $fb->get($url, $this->AccessToken);
             $aGraphEdge = $response->getGraphEdge()->asArray();
 
