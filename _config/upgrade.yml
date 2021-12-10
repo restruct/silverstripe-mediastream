@@ -1,0 +1,5 @@
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    Restruct\Silverstripe\MediaStream\MediaInput: Restruct\Silverstripe\MediaStream\Model\MediaInput
+    Restruct\Silverstripe\MediaStream\MediaInputInstagram: Restruct\Silverstripe\MediaStream\Model\MediaInputInstagram
+    Restruct\Silverstripe\MediaStream\MediaInputFacebook: Restruct\Silverstripe\MediaStream\Model\MediaInputFacebook

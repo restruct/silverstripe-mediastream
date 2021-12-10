@@ -14,6 +14,7 @@ namespace Restruct\Silverstripe\MediaStream\Model {
     use Restruct\Silverstripe\MediaStream\AccessTokens\InstagramAccessTokenHandler;
     use SilverStripe\Control\Controller;
     use SilverStripe\Core\Convert;
+    use SilverStripe\Dev\Debug;
     use SilverStripe\Forms\LiteralField;
     use SilverStripe\ORM\ArrayList;
     use SilverStripe\ORM\ValidationException;
@@ -132,7 +133,7 @@ namespace Restruct\Silverstripe\MediaStream\Model {
             $url = sprintf('%s/%s/%s?%s', $this->getEndPoint(), $this->UserID, 'media', $this->getQueryParameters());
 
             $aResultData = static::getCurlResults($url);
-            var_dump($aResultData);die();
+
             if ( !empty($aResultData[ 'data' ]) ) {
                 $aResult = $aResultData[ 'data' ];
                 $oUpdates = ArrayList::create();
@@ -173,7 +174,7 @@ namespace Restruct\Silverstripe\MediaStream\Model {
                 foreach ( $aMediaIds as $aMediaId ) {
                     $id = $aMediaId['id'];
 
-                    Debug::show($id);
+                    //Debug::show($id);
                 }
             }
 
