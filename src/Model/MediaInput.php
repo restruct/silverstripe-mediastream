@@ -67,9 +67,9 @@ class MediaInput extends DataObject
             'Content'   => $this->getPostContent($post),
             'TimeStamp' => self::getCreatedTimestamp($post),
             'OriginURL' => $this->getPostUrl($post),
-            'HasMedia' => isset($post['media_url']),
+            'HasMedia'  => isset($post[ 'media_url' ]),
             'MediaType' => $media_type,
-            'RawInput' => json_encode($post),
+            'RawInput'  => json_encode($post),
             'UserName'  => $this->getUserName($post),
         ];
     }
@@ -105,7 +105,7 @@ class MediaInput extends DataObject
 
     /**
      * @param MediaInput $mediaStream
-     * @param array       $aData
+     * @param array      $aData
      *
      * @return MediaUpdate|\SilverStripe\ORM\DataObject|null
      * @throws \SilverStripe\ORM\ValidationException
@@ -131,59 +131,51 @@ class MediaInput extends DataObject
 
         $oMediaUpdate->update($aData);
         $oMediaUpdate->write();
-        $aCurrentImagesIds = $oMediaUpdate->Images()->column();
 
-        $aImagesIds = [];
-
-        if ( !empty($aData[ 'ImageURL' ]) ) {
-
-            $imageURL = $aData[ 'ImageURL' ];
-
-            $basename = self::getImageFilename($imageURL);
-
-            $dirPath = Controller::join_links('MediaInputs', $this->getType());
-            $oFolder = Folder::find_or_make($dirPath);
-            $filename = Controller::join_links($dirPath, $basename);
-            $file_path = sprintf('%s/%s', ASSETS_PATH, $filename);
-
-            try {
-
-                if (copy($imageURL, $file_path) ) {
-
-                    $oImage = $oMediaUpdate->Images()->find('Name', $basename);
-
-                    if ( !$oImage ) {
-                        $oImage = Image::create();
-                    }
-
-                    $oImage->setFromLocalFile($file_path, $basename, null, null, [
-                        'conflict' => AssetStore::CONFLICT_OVERWRITE,
-                    ]);
-
-                    $oImage->Title = $basename;
-                    $oImage->ParentID = $oFolder->ID;
-                    $oImage->setFilename($filename);
-                    $oImage->write();
-                    $oImage->publishRecursive();
-
-                    $oMediaUpdate->Images()->add($oImage);
-                    $aImagesIds[]=$oImage->ID;
-                }
-
-            } catch ( Exception $exception ) {
-
-                Debug::show($exception->getMessage());
-                //Debug::show($exception->getTrace());
-            }
-
-        }
-
-        $aExcluded = array_filter(array_diff($aCurrentImagesIds, $aImagesIds));
-        if ( count($aExcluded) ) {
-            $oMediaUpdate->getManyManyComponents('Images')->removeMany($aExcluded);
-        }
+        $this->doProcessPostMediaAssets($oMediaUpdate, $aData);
 
         return $oMediaUpdate;
+    }
+
+    protected function saveImage($oMediaUpdate, $url)
+    {
+        $basename = self::getImageFilename($url);
+
+        $dirPath = Controller::join_links('MediaInputs', $this->getType());
+        $oFolder = Folder::find_or_make($dirPath);
+        $filename = Controller::join_links($dirPath, $basename);
+        $file_path = sprintf('%s/%s', ASSETS_PATH, $filename);
+
+        try {
+
+            if ( $oFolder && copy($url, $file_path) ) {
+
+                $oImage = $oMediaUpdate->Images()->find('Title', $basename);
+
+                if ( !$oImage ) {
+                    $oImage = Image::create();
+                }
+
+                $oImage->setFromLocalFile($file_path, $basename, null, null, [
+                    'conflict' => AssetStore::CONFLICT_OVERWRITE,
+                ]);
+
+                $oImage->Title = $basename;
+                $oImage->ParentID = $oFolder->ID;
+                $oImage->setFilename($filename);
+                $oImage->write();
+                $oImage->publishRecursive();
+
+                $oMediaUpdate->Images()->add($oImage);
+
+                return $oImage;
+            }
+
+        } catch ( Exception $exception ) {
+
+            Debug::show($exception->getMessage());
+            //Debug::show($exception->getTrace());
+        }
     }
 
     private static function getImageFilename($url)
@@ -281,23 +273,29 @@ class MediaInput extends DataObject
     }
 
 
-    public function getPostCreated($post){
-        user_error(sprintf('Please implement method %s in your sub_class',__FUNCTION__));
+    public function getPostCreated($post)
+    {
+        user_error(sprintf('Please implement method %s in your sub_class', __FUNCTION__));
     }
 
-    public function getUserName($post){
-        user_error(sprintf('Please implement method %s in your sub_class',__FUNCTION__));
+    public function getUserName($post)
+    {
+        user_error(sprintf('Please implement method %s in your sub_class', __FUNCTION__));
     }
 
-    public function getPostUrl($post){
-        user_error(sprintf('Please implement method %s in your sub_class',__FUNCTION__));
+    public function getPostUrl($post)
+    {
+        user_error(sprintf('Please implement method %s in your sub_class', __FUNCTION__));
     }
 
-    public function getImage($post){
-        user_error(sprintf('Please implement method %s in your sub_class',__FUNCTION__));
+    public function getImage($post)
+    {
+        user_error(sprintf('Please implement method %s in your sub_class', __FUNCTION__));
     }
-    public function getPostContent($post){
-        user_error(sprintf('Please implement method %s in your sub_class',__FUNCTION__));
+
+    public function getPostContent($post)
+    {
+        user_error(sprintf('Please implement method %s in your sub_class', __FUNCTION__));
     }
 
 }

@@ -5,6 +5,7 @@
  * Create an FB APP https://developers.facebook.com/apps/
  * Debug the USER Access token https://developers.facebook.com/tools/accesstoken/
  *
+ * https://developers.facebook.com/docs/graph-api/guides/explorer
  *
  * Get the USER access token first the APP Access token
  *
@@ -18,6 +19,7 @@ use Facebook\Facebook;
 use DateTime;
 use Exception;
 use Restruct\Silverstripe\MediaStream\AccessTokens\FacebookAccessTokenHandler;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
 
@@ -53,6 +55,8 @@ class MediaInputFacebook extends MediaInput
         'updated_time',
         'shares',
         'children',
+        'images',
+        'attachments',
         //'is_hidden',
         //'is_expired',
         'likes',
@@ -141,7 +145,7 @@ class MediaInputFacebook extends MediaInput
 
         try {
             $url = sprintf('/%s/%s?%s', $this->PageID, $this->getRequestType(), $this->getQueryParameters());
-
+            Debug::show($url);
             $response = $fb->get($url, $this->AccessToken);
             $aGraphEdge = $response->getGraphEdge()->asArray();
 
@@ -151,7 +155,10 @@ class MediaInputFacebook extends MediaInput
                 $aData[ 'MediaStreamID' ] = $this->ID;
                 $aData[ 'ImageURL' ] = $this->getImage($post);
 
-                //Debug::show($aData);
+                if ( !empty($post[ 'attachments' ]) ) {
+                    $aData[ 'attachments' ] = $post[ 'attachments' ];
+                }
+
                 $this->getOrCreateMediaUpdate($this, $aData);
 
             }
@@ -175,6 +182,39 @@ class MediaInputFacebook extends MediaInput
         }
     }
 
+
+    /**
+     * @param MediaUpdate $oMediaUpdate
+     * @param array       $aData
+     */
+    protected function doProcessPostMediaAssets(MediaUpdate $oMediaUpdate, array $aData): void
+    {
+
+
+        if ( !empty($aData[ 'ImageURL' ]) ) {
+
+            $imageURL = $aData[ 'ImageURL' ];
+
+            $oImage = $this->saveImage($oMediaUpdate, $imageURL);
+
+            foreach ( $aData[ 'attachments' ] as $attachment ) {
+                if ( !empty($subattachments = $attachment[ 'subattachments' ]) ) {
+                    foreach ( $subattachments as $subattachment ) {
+                        $image_url = $subattachment[ 'media' ][ 'image' ][ 'src' ];
+                        $oImage = $this->saveImage($oMediaUpdate, $image_url);
+
+                    }
+
+                }
+
+            }
+
+        }
+
+
+    }
+
+
     /**
      * @return string
      */
@@ -189,7 +229,7 @@ class MediaInputFacebook extends MediaInput
         $aQueryParameters[ 'limit' ] = 100;
 
         if ( $this->LastSynced ) {
-            //$aQueryParameters[ 'since' ] = $this->facebookMedia->LastSynced;
+            $aQueryParameters[ 'since' ] = $this->LastSynced;
         }
 
         return http_build_query($aQueryParameters);
@@ -202,7 +242,6 @@ class MediaInputFacebook extends MediaInput
     {
         return $this->endPoint;
     }
-
 
 
     public function getThumbnailImage($post)
@@ -221,7 +260,6 @@ class MediaInputFacebook extends MediaInput
 
         return ( $media_type === 'VIDEO' ) ? $post[ 'thumbnail_url' ] : $this->getImage($post);
     }
-
 
 
     /**
@@ -298,7 +336,6 @@ class MediaInputFacebook extends MediaInput
 
         return $post[ 'created_time' ];
     }
-
 
 
     /**

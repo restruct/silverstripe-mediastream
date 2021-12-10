@@ -45,6 +45,13 @@ namespace Restruct\Silverstripe\MediaStream\Model {
             'caption',
         ];
 
+        private static $media_fetch_fields = [
+            'id',
+            'media_type',
+            'media_url',
+            'timestamp',
+        ];
+
         public const POSTS_AND_COMMENTS = 0;
 
         public const POSTS_ONLY = 1;
@@ -110,13 +117,11 @@ namespace Restruct\Silverstripe\MediaStream\Model {
                     }
                     Controller::curr()->redirect($oAccessTokenHandler->getRedirectUri());
 
-
                 } catch ( GuzzleException $e ) {
                 } catch ( ValidationException $e ) {
                 }
 
             }
-
 
             return $fields;
         }
@@ -146,7 +151,7 @@ namespace Restruct\Silverstripe\MediaStream\Model {
                     $aData[ 'MediaStreamID' ] = $this->ID;
 
                     if ( !empty($post[ 'children' ]) ) {
-                        $this->getMediaObects($post[ 'children' ][ 'data' ]);
+                        $aData[ 'children' ] = $post[ 'children' ][ 'data' ];
                     }
 
                     if ( $aData[ 'MediaType' ] === "Video" ) {
@@ -168,36 +173,67 @@ namespace Restruct\Silverstripe\MediaStream\Model {
 
         }
 
-        public function getMediaObects($aMediaIds)
-        {
-            if ( !empty($aMediaIds) ) {
-                foreach ( $aMediaIds as $aMediaId ) {
-                    $id = $aMediaId['id'];
-
-                    //Debug::show($id);
-                }
-            }
-
-
-            return true;
-        }
-
 
         /**
+         * @param MediaUpdate $oMediaUpdate
+         * @param array       $aData
+         */
+        protected function doProcessPostMediaAssets(MediaUpdate $oMediaUpdate, array $aData)
+        {
+
+            //$aCurrentImagesIds = $oMediaUpdate->Images()->column();
+
+            //$aImagesIds = [];
+
+            if ( !empty($aData[ 'ImageURL' ]) ) {
+
+                $imageURL = $aData[ 'ImageURL' ];
+
+                $oImage = $this->saveImage($oMediaUpdate, $imageURL);
+
+                // If Media Type is Carousel_album,  A list of all media IDs will be provided in an array as [children]
+                $aMediaIds = $aData[ 'children' ];
+                if ( !empty($aMediaIds) ) {
+                    foreach ( $aMediaIds as $aMediaId ) {
+
+                        $queryURL = sprintf('%s/%s?%s', $this->getEndPoint(), $aMediaId[ 'id' ], $this->getQueryParameters(true));
+
+                        $aResultData = static::getCurlResults($queryURL);
+                        $image_url = $this->getImage($aResultData);
+                        $oImage = $this->saveImage($oMediaUpdate, $image_url);
+                    }
+                }
+
+                //if ( $oImage ) {
+                //    $aImagesIds[] = $oImage->ID;
+                //}
+
+            }
+
+            //$aExcluded = array_filter(array_diff($aCurrentImagesIds, $aImagesIds));
+            //if ( count($aExcluded) ) {
+            //    $oMediaUpdate->getManyManyComponents('Images')->removeMany($aExcluded);
+            //}
+
+        }
+
+        /**
+         * @param false $isForMedia
+         *
          * @return string
          */
-        private function getQueryParameters()
+        private function getQueryParameters(bool $isForMedia = false)
         {
 
             $aQueryParameters = [
                 'date_format'  => 'U',
-                'fields'       => implode(',', static::getFetchFields()),
+                'fields'       => implode(',', static::getFetchFields($isForMedia)),
                 'access_token' => $this->getToken(),
             ];
             $aQueryParameters[ 'limit' ] = 100;
 
             if ( $this->LastSynced ) {
-                //$aQueryParameters[ 'since' ] = $this->LastSynced;
+                $aQueryParameters[ 'since' ] = $this->LastSynced;
             }
 
             return http_build_query($aQueryParameters);
@@ -273,11 +309,13 @@ namespace Restruct\Silverstripe\MediaStream\Model {
         }
 
         /**
+         * @param false $isForMedia
+         *
          * @return string[]
          */
-        public static function getFetchFields(): array
+        public static function getFetchFields(bool $isForMedia = false): array
         {
-            return self::$fetch_fields;
+            return $isForMedia ? static::$media_fetch_fields : self::$fetch_fields;
         }
 
 
