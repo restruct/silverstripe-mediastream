@@ -2,9 +2,8 @@
 
 namespace Restruct\Silverstripe\MediaStream\Tasks;
 
-use Restruct\Silverstripe\MediaStream\MediaInput;
+use Restruct\Silverstripe\MediaStream\Model\MediaInput;
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\Dev\Debug;
 
 class SyncJob extends BuildTask
 {

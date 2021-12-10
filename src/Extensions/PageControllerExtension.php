@@ -1,14 +1,14 @@
 <?php
 
-namespace Restruct\Silverstripe\MediaStream;
+namespace Restruct\Silverstripe\MediaStream\Extensions;
 
-use BlocksPageController;
+use Restruct\Silverstripe\MediaStream\Model\MediaUpdate;
 use SilverStripe\Core\Extension;
-use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\SSViewer;
 
-class PageControllerExtension extends Extension
+class PageControllerExtension
+    extends Extension
 {
 
     private static $allowed_actions = [
@@ -28,7 +28,8 @@ class PageControllerExtension extends Extension
     public static function MediaTimelineShortCodeHandler($arguments, $content = null, $parser = null, $tagName)
     {
         $arrData = new ArrayData([
-            'MediaUpdates' => MediaUpdate::get()->sort('TimeStamp DESC')->limit(80),
+//            'MediaUpdates' => MediaUpdate::get()->sort('TimeStamp DESC')->limit(80),
+            'MediaUpdates' => MediaUpdate::get_updates(80),
         ]);
 
         return "<div class=\"shortcode-mediatimeline\">" . $arrData->renderWith('MediaUpdatesTimeLine') . "</div>";
@@ -42,7 +43,7 @@ class PageControllerExtension extends Extension
     public function MediaUpdates($limit = 20)
     {
 
-         return MediaUpdate::get()->sort('TimeStamp DESC')->limit($limit);
+         return MediaUpdate::get_updates($limit);
     }
 
     public function loadmediaupdates()

@@ -1,3 +1,9 @@
-PageController:
-  extensions:
-    - Restruct\Silverstripe\MediaStream\PageControllerExtension
+## Extension in order to load media updates as partial/ajax content:
+#PageController:
+#  extensions:
+#    - Restruct\Silverstripe\MediaStream\Extensions\PageControllerExtension
+
+## Add [mediastream] shortcode to Shortcodable:
+#Shortcodable\Shortcodable:
+#  shortcodable_classes:
+#    - Restruct\Silverstripe\MediaStream\Shortcodes\MediaTimelineShortcode

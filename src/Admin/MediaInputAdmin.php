@@ -1,7 +1,10 @@
 <?php
 
-namespace Restruct\Silverstripe\MediaStream;
+namespace Restruct\Silverstripe\MediaStream\Admin;
 
+use Restruct\Silverstripe\MediaStream\Model\MediaInputFacebook;
+use Restruct\Silverstripe\MediaStream\Model\MediaInputInstagram;
+use Restruct\Silverstripe\MediaStream\Model\MediaUpdate;
 use SilverStripe\Admin\ModelAdmin;
 
 class MediaInputAdmin extends ModelAdmin
@@ -11,7 +14,7 @@ class MediaInputAdmin extends ModelAdmin
      * @var string[]
      */
     private static $managed_models = [
-        MediaInput::class,
+        MediaUpdate::class,
         MediaInputFacebook::class,
         MediaInputInstagram::class,
     ];

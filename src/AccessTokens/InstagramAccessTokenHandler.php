@@ -5,30 +5,20 @@
  * https://developers.facebook.com/docs/instagram-basic-display-api/guides/long-lived-access-tokens
  */
 
-namespace Restruct\Silverstripe\MediaStream\Facebook {
+namespace Restruct\Silverstripe\MediaStream\AccessTokens {
 
-    use GuzzleHttp\Client;
-    use Restruct\Silverstripe\MediaStream\InstagramMedia;
-    use Restruct\Silverstripe\MediaStream\MediaInputAdmin;
-    use Restruct\Silverstripe\MediaStream\MediaInputInstagram;
-    use Restruct\Silverstripe\MediaStream\MediaStream;
-    use Restruct\Silverstripe\MediaStream\MediaStreamAdmin;
+    use Restruct\Silverstripe\MediaStream\Admin\MediaInputAdmin;
+    use Restruct\Silverstripe\MediaStream\Model\MediaInputInstagram;
     use SilverStripe\Control\Controller;
     use SilverStripe\Control\Director;
-    use SilverStripe\Control\Email\Email;
-    use SilverStripe\Core\Injector\Injectable;
-    use SilverStripe\Dev\Debug;
     use DateTime;
     use Exception;
-    use SilverStripe\SiteConfig\SiteConfig;
 
     /**
      * @property $ID
      */
     class InstagramAccessTokenHandler extends AccessTokenHandler
     {
-
-
         private $baseApiURL = 'https://api.instagram.com/oauth';
         private $baseGraphURL = 'https://graph.instagram.com';
 

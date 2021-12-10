@@ -8,21 +8,16 @@
  *
  */
 
-namespace Restruct\Silverstripe\MediaStream {
-
+namespace Restruct\Silverstripe\MediaStream\Model {
 
     use GuzzleHttp\Exception\GuzzleException;
-    use Restruct\Silverstripe\MediaStream\Facebook\InstagramAccessTokenHandler;
+    use Restruct\Silverstripe\MediaStream\AccessTokens\InstagramAccessTokenHandler;
     use SilverStripe\Control\Controller;
     use SilverStripe\Core\Convert;
-    use SilverStripe\Dev\Debug;
     use SilverStripe\Forms\LiteralField;
-    use SilverStripe\Forms\ReadonlyField;
-    use SilverStripe\Forms\RequiredFields;
     use SilverStripe\ORM\ArrayList;
     use SilverStripe\ORM\ValidationException;
     use DateTime;
-
 
     /**
      * @property mixed|null $AppID
@@ -80,12 +75,12 @@ namespace Restruct\Silverstripe\MediaStream {
 
             $fields = parent::getCMSFields();
 
-            $fields->addFieldsToTab('Root.Main', [
-                ReadonlyField::create('AccessToken'),
-                ReadonlyField::create('TokenExpiryDate'),
-                ReadonlyField::create('LastSynced'),
-                ReadonlyField::create('UserID'),
-            ]);
+//            $fields->addFieldsToTab('Root.Main', [
+//                ReadonlyField::create('AccessToken'),
+//                ReadonlyField::create('TokenExpiryDate'),
+//                ReadonlyField::create('LastSynced'),
+//                ReadonlyField::create('UserID'),
+//            ]);
 
             $fields->addFieldToTab('Root.Main', new LiteralField('sf_html_2', '<p>You\'ll need to add the following redirect URI <strong><code> ' . $oAccessTokenHandler->getRedirectUri() . ' </code> </strong>in the settings for the Instagram App.</p>'));
 
@@ -137,6 +132,7 @@ namespace Restruct\Silverstripe\MediaStream {
             $url = sprintf('%s/%s/%s?%s', $this->getEndPoint(), $this->UserID, 'media', $this->getQueryParameters());
 
             $aResultData = static::getCurlResults($url);
+            var_dump($aResultData);die();
             if ( !empty($aResultData[ 'data' ]) ) {
                 $aResult = $aResultData[ 'data' ];
                 $oUpdates = ArrayList::create();
@@ -167,7 +163,6 @@ namespace Restruct\Silverstripe\MediaStream {
                 $this->write();
 
                 return true;
-
             }
 
         }
