@@ -57,6 +57,7 @@ class MediaInputFacebook extends MediaInput
         'created_time',
         'updated_time',
         'shares',
+        'children',
         //'is_hidden',
         //'is_expired',
         'likes',

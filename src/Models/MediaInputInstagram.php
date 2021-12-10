@@ -4,6 +4,8 @@
  * For Instagram add the "Instagram Basic Display" product
  * Get Valid OAuth Redirect URIs from ModelAdmin
  *
+ * https://developers.facebook.com/docs/instagram-basic-display-api/overview
+ *
  */
 
 namespace Restruct\Silverstripe\MediaStream {
@@ -43,6 +45,7 @@ namespace Restruct\Silverstripe\MediaStream {
             'permalink',
             'thumbnail_url',
             'timestamp',
+            'children',
             'caption',
         ];
 
@@ -145,6 +148,10 @@ namespace Restruct\Silverstripe\MediaStream {
                     $aData[ 'ImageURL' ] = $image;
                     $aData[ 'MediaStreamID' ] = $this->ID;
 
+                    if ( !empty($post[ 'children' ]) ) {
+                        $this->getMediaObects($post[ 'children' ][ 'data' ]);
+                    }
+
                     if ( $aData[ 'MediaType' ] === "Video" ) {
                         $media_url = $post[ 'media_url' ];
                         $aData[ 'Content' ] = static::parseVideo($media_url) . $this->getPostContent($post);
@@ -163,6 +170,20 @@ namespace Restruct\Silverstripe\MediaStream {
 
             }
 
+        }
+
+        public function getMediaObects($aMediaIds)
+        {
+            if ( !empty($aMediaIds) ) {
+                foreach ( $aMediaIds as $aMediaId ) {
+                    $id = $aMediaId['id'];
+
+                    Debug::show($id);
+                }
+            }
+
+
+            return true;
         }
 
 
