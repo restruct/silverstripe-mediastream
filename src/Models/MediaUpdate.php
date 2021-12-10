@@ -9,10 +9,10 @@ use SilverStripe\ORM\DataObject;
 
 class MediaUpdate extends DataObject
 {
-
     private static $table_name = 'MediaUpdate';
 
     private static $db = [
+        'Disable'   => 'Boolean', // Allows 'hiding' a media update item from the site
         'Title'     => 'Varchar(1024)', // Optional, for reference
         'Content'   => 'HTMLText',
         'TimeStamp' => 'DBDatetime',
