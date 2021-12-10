@@ -12,14 +12,8 @@
 
 namespace Restruct\Silverstripe\MediaStream {
 
-    use Restruct\Silverstripe\MediaStream\Facebook\AccessTokenHandler;
     use Restruct\Silverstripe\MediaStream\Facebook\FacebookAccessTokenHandler;
     use Restruct\Silverstripe\MediaStream\Facebook\FacebookFeed;
-    use Restruct\Silverstripe\MediaStream\Providers\ProviderInterface;
-    use SilverStripe\Dev\Debug;
-    use SilverStripe\Forms\DropdownField;
-    use SilverStripe\Forms\LiteralField;
-    use SilverStripe\Forms\RequiredFields;
     use SilverStripe\ORM\FieldType\DBField;
 
     /**
@@ -29,14 +23,14 @@ namespace Restruct\Silverstripe\MediaStream {
      * @property int        $Type
      * @property int        $PageID
      */
-    class TwitterMedia extends MediaStream implements ProviderInterface
+    class MediaInputTwitter extends MediaInput
     {
 
         public const POSTS_AND_COMMENTS = 0;
 
         public const POSTS_ONLY = 1;
 
-        private static $table_name = 'TwitterMedia';
+        private static $table_name = 'MediaInputTwitter';
 
         private static $db = [
             'Username'          => 'Varchar(255)',
@@ -54,7 +48,7 @@ namespace Restruct\Silverstripe\MediaStream {
 
         private static $summary_fields = [];
 
-        private $type = 'twitter';
+        protected $type = 'twitter';
 
         public function getCMSFields()
         {
