@@ -1,10 +1,8 @@
 <?php
 
-namespace Restruct\Silverstripe\MediaStream;
+namespace Restruct\Silverstripe\MediaStream\Model;
 
 use SilverStripe\Assets\Image;
-use SilverStripe\CMS\Model\SiteTree;
-use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\FieldType\DBDatetime;
 use SilverStripe\ORM\FieldType\DBField;
@@ -52,6 +50,11 @@ class MediaUpdate extends DataObject
         //'OriginLink' => 'Link',
         'UniqueID'        => 'ID (per type)',
     ];
+
+    public static function get_updates($limit = 20)
+    {
+        return self::get()->filter('Disable:not',1)->sort('TimeStamp DESC')->limit($limit);
+    }
 
     // Just a little helper to
     public function LocalTimeStamp()

@@ -1,13 +1,8 @@
 <?php
 
-namespace Restruct\Silverstripe\MediaStream\Facebook {
+namespace Restruct\Silverstripe\MediaStream\AccessTokens {
 
-    use GuzzleHttp\Client;
-    use Restruct\Silverstripe\MediaStream\FacebookMedia;
-    use Restruct\Silverstripe\MediaStream\MediaInputFacebook;
-    use Restruct\Silverstripe\MediaStream\MediaStream;
-    use SilverStripe\Core\Injector\Injectable;
-    use SilverStripe\Dev\Debug;
+    use Restruct\Silverstripe\MediaStream\Model\MediaInputFacebook;
     use Exception;
 
     class FacebookAccessTokenHandler extends AccessTokenHandler

@@ -10,21 +10,16 @@
  *
  */
 
-namespace Restruct\Silverstripe\MediaStream;
+namespace Restruct\Silverstripe\MediaStream\Model;
 
-use Facebook\Exception\ResponseException;
-use Facebook\Exception\SDKException;
+use Facebook\Exceptions\FacebookResponseException;
+use Facebook\Exceptions\FacebookSDKException;
 use Facebook\Facebook;
 use DateTime;
 use Exception;
-use Restruct\Silverstripe\MediaStream\Facebook\FacebookAccessTokenHandler;
-use SilverStripe\Dev\Debug;
+use Restruct\Silverstripe\MediaStream\AccessTokens\FacebookAccessTokenHandler;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
-use SilverStripe\Forms\RequiredFields;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\FieldType\DBField;
 
 /**
  * @property mixed|null $AppSecret
@@ -91,10 +86,18 @@ class MediaInputFacebook extends MediaInput
 
     public function getCMSFields()
     {
-
         $fields = parent::getCMSFields();
-        $fields->addFieldToTab('Root.Main', LiteralField::create('sf_html_1', '<h4>To get the necessary Facebook API credentials you\'ll need to create a <a href="https://developers.facebook.com/apps" target="_blank">Facebook App.</a></h4><p>&nbsp;</p>'), 'Label');
-        $fields->replaceField('Type', DropdownField::create('Type', 'Facebook Type', $this->config()->facebook_types));
+
+        $fields->addFieldToTab('Root.Main',
+            LiteralField::create(
+                'sf_html_1',
+                '<h4>To get the necessary Facebook API credentials you\'ll need to create a <a href="https://developers.facebook.com/apps" target="_blank">Facebook App.</a></h4><p>&nbsp;</p>'
+            ),
+            'Label'
+        );
+
+        $fields->replaceField('Type',
+            DropdownField::create('Type', 'Facebook Type', $this->config()->facebook_types));
 
         return $fields;
     }
@@ -122,7 +125,7 @@ class MediaInputFacebook extends MediaInput
      * @param int $limit
      *
      * @return bool|void
-     * @throws SDKException
+     * @throws FacebookSDKException
      */
     public function fetchUpdates($limit = 100)
     {
@@ -159,10 +162,10 @@ class MediaInputFacebook extends MediaInput
 
             return true;
 
-        } catch ( ResponseException $e ) {
+        } catch ( FacebookResponseException $e ) {
             echo 'Graph returned an error: ' . $e->getMessage();
 
-        } catch ( SDKException $e ) {
+        } catch ( FacebookSDKException $e ) {
             echo 'Facebook SDK returned an error: ' . $e->getMessage();
 
         } catch ( Exception $e ) {
@@ -317,6 +320,5 @@ class MediaInputFacebook extends MediaInput
     {
         return $this->version;
     }
-
 
 }

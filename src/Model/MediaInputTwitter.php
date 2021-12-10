@@ -10,10 +10,8 @@
  *
  */
 
-namespace Restruct\Silverstripe\MediaStream {
+namespace Restruct\Silverstripe\MediaStream\Model {
 
-    use Restruct\Silverstripe\MediaStream\Facebook\FacebookAccessTokenHandler;
-    use Restruct\Silverstripe\MediaStream\Facebook\FacebookFeed;
     use SilverStripe\ORM\FieldType\DBField;
 
     /**
@@ -145,7 +143,6 @@ namespace Restruct\Silverstripe\MediaStream {
         {
             return FacebookAccessTokenHandler::create($this)->getAccessToken();
         }
-
 
     }
 }

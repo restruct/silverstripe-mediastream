@@ -1,16 +1,15 @@
 <?php
 
-namespace Restruct\Silverstripe\MediaStream;
+namespace Restruct\Silverstripe\MediaStream\Model;
 
 use SilverStripe\Assets\Folder;
 use SilverStripe\Control\Controller;
-use SilverStripe\Control\Director;
 use SilverStripe\Dev\Debug;
-use SilverStripe\Forms\FieldList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Assets\Image;
 use SilverStripe\Assets\Storage\AssetStore;
 use Exception;
+
 /**
  * @property mixed|null $Limit
  * @property string     $TokenExpiryDate
@@ -20,7 +19,6 @@ use Exception;
  */
 class MediaInput extends DataObject
 {
-
     protected $type;
 
     private static $table_name = "MediaInput";
@@ -234,7 +232,6 @@ class MediaInput extends DataObject
      */
     public static function getCurlResults(string $requestUrl, int $timeout = 10, array $aPostFields = [])
     {
-
         $aHeaders = [];
         $aHeaders[ "User-Agent" ] = "Curl/1.0";
 

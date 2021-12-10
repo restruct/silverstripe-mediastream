@@ -1,14 +1,10 @@
 <?php
 
-namespace Restruct\Silverstripe\MediaStream\Facebook {
+namespace Restruct\Silverstripe\MediaStream\AccessTokens {
 
     use GuzzleHttp\Client;
-    use Restruct\Silverstripe\MediaStream\Feed;
-    use Restruct\Silverstripe\MediaStream\MediaInput;
-    use Restruct\Silverstripe\MediaStream\MediaStream;
+    use Restruct\Silverstripe\MediaStream\Model\MediaInput;
     use SilverStripe\Core\Injector\Injectable;
-    use SilverStripe\Dev\Debug;
-    use Exception;
 
     abstract class AccessTokenHandler
     {
@@ -65,7 +61,6 @@ namespace Restruct\Silverstripe\MediaStream\Facebook {
          */
         protected function getCurlResults(string $requestUrl, int $timeout = 10, array $aPostFields = [])
         {
-
             return MediaInput::getCurlResults($requestUrl, $timeout, $aPostFields);
         }
 
