@@ -7,3 +7,16 @@
 #Shortcodable\Shortcodable:
 #  shortcodable_classes:
 #    - Restruct\Silverstripe\MediaStream\Shortcodes\MediaTimelineShortcode
+
+# Create a default cache namespace (default lifetime 1h)
+SilverStripe\Core\Injector\Injector:
+  Psr\SimpleCache\CacheInterface.MediaStreamInputCache_Facebook:
+    factory: SilverStripe\Core\Cache\CacheFactory
+    constructor:
+      namespace: "MediaStreamInputCache_Facebook"
+      defaultLifetime: 3600
+  Psr\SimpleCache\CacheInterface.MediaStreamInputCache_Instagram:
+    factory: SilverStripe\Core\Cache\CacheFactory
+    constructor:
+      namespace: "MediaStreamInputCache_Instagram"
+      defaultLifetime: 3600

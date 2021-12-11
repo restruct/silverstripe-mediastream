@@ -135,42 +135,68 @@ namespace Restruct\Silverstripe\MediaStream\Model {
         public function fetchUpdates($limit = 80)
         {
             parent::fetchUpdates();
-            $url = sprintf('%s/%s/%s?%s', $this->getEndPoint(), $this->UserID, 'media', $this->getQueryParameters());
+            $query = sprintf('%s/%s/%s?%s', $this->getEndPoint(), $this->UserID, 'media', $this->getQueryParameters());
 
-            $aResultData = static::getCurlResults($url);
+            // get a reference to the cache for this module
+            $cache = $this->getCache();
 
-            if ( !empty($aResultData[ 'data' ]) ) {
-                $aResult = $aResultData[ 'data' ];
-                $oUpdates = ArrayList::create();
+            // we try & get the items from the cache, only get & update then once per ~hour
+            $cachekey = md5($query);
+            $updates = [];
+            try {
 
-                foreach ( $aResult as $post ) {
-                    $aData = $this->getPostData($post);
-                    $media_type = $aData[ 'MediaType' ];
-                    $image = ( $media_type === 'Video' ) ? $this->getThumbnailImage($post) : $this->getImage($post);
-                    $aData[ 'ImageURL' ] = $image;
-                    $aData[ 'MediaStreamID' ] = $this->ID;
+                if ( !( $updates = $cache->has($cachekey) ) ) {
+                    $aResultData = static::getCurlResults($query);
 
-                    if ( !empty($post[ 'children' ]) ) {
-                        $aData[ 'children' ] = $post[ 'children' ][ 'data' ];
+                    if ( $aResultData && !empty($aResultData[ 'data' ]) ) {
+                        $aResult = $aResultData[ 'data' ];
+                        $oUpdates = ArrayList::create();
+
+                        foreach ( $aResult as $post ) {
+                            $aData = $this->getPostData($post);
+                            $media_type = $aData[ 'MediaType' ];
+                            $image = ( $media_type === 'Video' ) ? $this->getThumbnailImage($post) : $this->getImage($post);
+                            $aData[ 'ImageURL' ] = $image;
+                            $aData[ 'MediaStreamID' ] = $this->ID;
+
+                            if ( !empty($post[ 'children' ]) ) {
+                                $aData[ 'children' ] = $post[ 'children' ][ 'data' ];
+                            }
+
+                            if ( $aData[ 'MediaType' ] === "Video" ) {
+                                $media_url = $post[ 'media_url' ];
+                                $aData[ 'Content' ] = static::parseVideo($media_url) . $this->getPostContent($post);
+                            }
+
+                            $updates[] = $oUpdates->push($this->getOrCreateMediaUpdate($this, $aData));
+
+                        }
+
+                        $cache->set($updates, $cachekey);
+
+                    } else {
+                        var_dump($aResultData);
+                        $curClass = $this->getType();
+                        print "ERROR ($curClass)<br>";
+
+                        return user_error("ERROR updating $curClass, raw_response: [ " . print_r($aResultData, true) . ' ]', E_USER_ERROR);
                     }
-
-                    if ( $aData[ 'MediaType' ] === "Video" ) {
-                        $media_url = $post[ 'media_url' ];
-                        $aData[ 'Content' ] = static::parseVideo($media_url) . $this->getPostContent($post);
-                    }
-
-                    $oUpdates->push($this->getOrCreateMediaUpdate($this, $aData));
-
                 }
+
 
                 $date = new DateTime();
                 $dateTime = $date->format('Y-m-d H:i:s');
                 $this->LastSynced = strtotime($dateTime);
                 $this->write();
 
-                return true;
-            }
+                // clear memory
+                unset($cache);
 
+                return true;
+            } catch ( \Exception $e ) {
+                echo 'Error: ' . $e->getMessage();
+
+            }
         }
 
 
@@ -233,7 +259,7 @@ namespace Restruct\Silverstripe\MediaStream\Model {
             $aQueryParameters[ 'limit' ] = 100;
 
             if ( $this->LastSynced ) {
-                $aQueryParameters[ 'since' ] = $this->LastSynced;
+                //$aQueryParameters[ 'since' ] = $this->LastSynced;
             }
 
             return http_build_query($aQueryParameters);

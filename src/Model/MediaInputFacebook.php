@@ -19,9 +19,11 @@ use Facebook\Facebook;
 use DateTime;
 use Exception;
 use Restruct\Silverstripe\MediaStream\AccessTokens\FacebookAccessTokenHandler;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Debug;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\LiteralField;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * @property mixed|null $AppSecret
@@ -53,13 +55,8 @@ class MediaInputFacebook extends MediaInput
         'status_type',
         'created_time',
         'updated_time',
-        'shares',
         'children',
-        'images',
         'attachments',
-        //'is_hidden',
-        //'is_expired',
-        'likes',
     ];
 
     private static $table_name = 'MediaInputFacebook';
@@ -116,6 +113,8 @@ class MediaInputFacebook extends MediaInput
         return 'posts';
     }
 
+
+
     /**
      * @param int $limit
      *
@@ -133,30 +132,53 @@ class MediaInputFacebook extends MediaInput
             'default_access_token'  => $this->getToken(),
         ]);
 
+        $query = sprintf('/%s/%s?%s', $this->PageID, $this->getRequestType(), $this->getQueryParameters());
+        // get a reference to the cache for this module
+        $cache = $this->getCache();
+
+        // we try & get the items from the cache, only get & update then once per ~hour
+        $cachekey = md5($query);
+        $updates = [];
+
         try {
-            $url = sprintf('/%s/%s?%s', $this->PageID, $this->getRequestType(), $this->getQueryParameters());
 
-            $response = $fb->get($url, $this->AccessToken);
-            $aGraphEdge = $response->getGraphEdge()->asArray();
+            if ( !( $updates = $cache->get($cachekey) ) ) {
+                $response = $fb->get($query, $this->AccessToken);
+                $aGraphEdgeResponse = $response->getGraphEdge()->asArray();
+                if ( $aGraphEdgeResponse ) {
 
-            foreach ( $aGraphEdge as $post ) {
+                    foreach ( $aGraphEdgeResponse as $post ) {
 
-                $aData = $this->getPostData($post);
-                $aData[ 'MediaStreamID' ] = $this->ID;
-                $aData[ 'ImageURL' ] = $this->getImage($post);
+                        $aData = $this->getPostData($post);
+                        $aData[ 'MediaStreamID' ] = $this->ID;
+                        $aData[ 'ImageURL' ] = $this->getImage($post);
 
-                if ( !empty($post[ 'attachments' ]) ) {
-                    $aData[ 'attachments' ] = $post[ 'attachments' ];
+                        if ( !empty($post[ 'attachments' ]) ) {
+                            $aData[ 'attachments' ] = $post[ 'attachments' ];
+                        }
+
+                        $updates[] = $this->getOrCreateMediaUpdate($this, $aData);
+
+                    }
+
+                } else {
+                    var_dump($response);
+                    $curClass = $this->getType();
+                    print "ERROR ($curClass)<br>";
+
+                    return user_error("ERROR updating $curClass, raw_response: [ " . print_r($aGraphEdgeResponse, true) . ' ]', E_USER_ERROR);
                 }
 
-                $this->getOrCreateMediaUpdate($this, $aData);
-
+                $cache->set($updates, $cachekey);
             }
 
             $date = new DateTime();
             $dateTime = $date->format('Y-m-d H:i:s');
             $this->LastSynced = strtotime($dateTime);
             $this->write();
+
+            // clear memory
+            unset($cache);
 
             return true;
 
@@ -170,6 +192,8 @@ class MediaInputFacebook extends MediaInput
             echo 'Error: ' . $e->getMessage();
 
         }
+
+
     }
 
 
@@ -219,7 +243,7 @@ class MediaInputFacebook extends MediaInput
         $aQueryParameters[ 'limit' ] = 100;
 
         if ( $this->LastSynced ) {
-            $aQueryParameters[ 'since' ] = $this->LastSynced;
+            //$aQueryParameters[ 'since' ] = $this->LastSynced;
         }
 
         return http_build_query($aQueryParameters);

@@ -2,8 +2,11 @@
 
 namespace Restruct\Silverstripe\MediaStream\Model;
 
+use Psr\SimpleCache\CacheInterface;
 use SilverStripe\Assets\Folder;
+use SilverStripe\Assets\InterventionBackend;
 use SilverStripe\Control\Controller;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\Debug;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Assets\Image;
@@ -20,6 +23,11 @@ use Exception;
 class MediaInput extends DataObject
 {
     protected $input_type;
+
+    /**
+     * @var CacheInterface
+     */
+    protected $cache;
 
     private static $table_name = "MediaInput";
 
@@ -178,6 +186,11 @@ class MediaInput extends DataObject
         }
     }
 
+    /**
+     * @param $url
+     *
+     * @return mixed|string
+     */
     private static function getImageFilename($url)
     {
 
@@ -270,6 +283,45 @@ class MediaInput extends DataObject
         $text = html_entity_decode($rawText, 0, 'UTF-8');
 
         return preg_replace('/https?:\/\/[\w\-\.!~#?&=+\*\'"(),\/]+/', '<a href="$0">$0</a>', $text);
+    }
+
+
+    /**
+     * Gets the cache used by this provider
+     *
+     * @return CacheInterface
+     */
+    public function getCache()
+    {
+        if ( !$this->cache ) {
+            /** @var CacheInterface $cache */
+            $cache = Injector::inst()->get(CacheInterface::class . $this->getCacheKeyName());
+            $this->setCache($cache);
+        }
+
+        return $this->cache;
+    }
+
+    /**
+     * @param CacheInterface $cache
+     *
+     * @return $this
+     */
+    public function setCache($cache)
+    {
+        $this->cache = $cache;
+
+        return $this;
+    }
+
+    /**
+     * returns a cache key name that is based on the current MediaInput classname
+     *
+     * @return string
+     */
+    protected function getCacheKeyName()
+    {
+        return '.MediaStreamInputCache_' . $this->getType();
     }
 
 
